@@ -29,17 +29,8 @@ public class UserController {
     public User createUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на создание пользователя: {}", user);
 
-        // Проверка логина на пробелы
-        if (user.getLogin().contains(" ")) {
-            log.error("Логин пользователя {} содержит пробелы", user.getLogin());
-            throw new ValidationException("Логин не может содержать пробелы");
-        }
-
-        // Если имя не задано, используем логин
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            log.debug("Имя пользователя не задано, используется логин: {}", user.getLogin());
-        }
+        // Обработка имени (если не задано, используем логин)
+        handleUserName(user);
 
         user.setId(currentId++);
         users.put(user.getId(), user);
@@ -51,6 +42,19 @@ public class UserController {
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя: {}", user);
 
+        // Проверка существования пользователя
+        validateUserExists(user);
+
+        // Обработка имени (если не задано, используем логин)
+        handleUserName(user);
+
+        users.put(user.getId(), user);
+        log.info("Пользователь с id {} успешно обновлен", user.getId());
+        return user;
+    }
+
+    //Проверяет, что пользователь существует в хранилище
+    private void validateUserExists(User user) {
         if (user.getId() <= 0) {
             log.error("ID пользователя должен быть указан");
             throw new ValidationException("ID пользователя должен быть указан");
@@ -60,21 +64,14 @@ public class UserController {
             log.error("Пользователь с id {} не найден", user.getId());
             throw new ValidationException("Пользователь с id " + user.getId() + " не найден");
         }
+    }
 
-        // Проверка логина на пробелы
-        if (user.getLogin().contains(" ")) {
-            log.error("Логин пользователя {} содержит пробелы", user.getLogin());
-            throw new ValidationException("Логин не может содержать пробелы");
-        }
-
-        // Если имя не задано, используем логин
+    //Обрабатывает имя пользователя:
+    //если имя не задано или пустое, использует логин
+    private void handleUserName(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.debug("Имя пользователя не задано, используется логин: {}", user.getLogin());
         }
-
-        users.put(user.getId(), user);
-        log.info("Пользователь с id {} успешно обновлен", user.getId());
-        return user;
     }
 }

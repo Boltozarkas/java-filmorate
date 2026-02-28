@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Data
 public class Film {
     private long id;
+    private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
     @NotBlank(message = "Название не может быть пустым")
     private String name;
@@ -27,7 +28,6 @@ public class Film {
         if (releaseDate == null) {
             return true;
         }
-        LocalDate earliestFilmDate = LocalDate.of(1895, 12, 28);
-        return !releaseDate.isBefore(earliestFilmDate);
+        return !releaseDate.isBefore(EARLIEST_RELEASE_DATE);
     }
 }

@@ -4,10 +4,13 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
     private long id;
+    private Set<Long> friends = new HashSet<>(); // для хранения друзей
 
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Email должен содержать символ @ и быть корректным")

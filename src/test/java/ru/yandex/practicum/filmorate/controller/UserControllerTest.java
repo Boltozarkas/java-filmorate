@@ -4,12 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,6 +28,12 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockBean
+    private UserStorage userStorage;
+
+    @MockBean
+    private UserService userService;
+
     @Test
     void shouldCreateUser() throws Exception {
         User user = new User();
@@ -31,11 +42,20 @@ class UserControllerTest {
         user.setName("Test Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
+        User createdUser = new User();
+        createdUser.setId(1L);
+        createdUser.setEmail("test@test.com");
+        createdUser.setLogin("testlogin");
+        createdUser.setName("Test Name");
+        createdUser.setBirthday(LocalDate.of(1990, 1, 1));
+
+        when(userStorage.addUser(any(User.class))).thenReturn(createdUser);
+
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.email").value("test@test.com"));
     }
 
@@ -46,6 +66,15 @@ class UserControllerTest {
         user.setLogin("testlogin");
         user.setName("");
         user.setBirthday(LocalDate.of(1990, 1, 1));
+
+        User createdUser = new User();
+        createdUser.setId(1L);
+        createdUser.setEmail("test@test.com");
+        createdUser.setLogin("testlogin");
+        createdUser.setName("testlogin"); // имя должно стать логином
+        createdUser.setBirthday(LocalDate.of(1990, 1, 1));
+
+        when(userStorage.addUser(any(User.class))).thenReturn(createdUser);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)

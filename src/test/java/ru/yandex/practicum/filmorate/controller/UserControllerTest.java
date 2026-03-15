@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 
@@ -29,9 +28,6 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private UserStorage userStorage;
-
-    @MockBean
     private UserService userService;
 
     @Test
@@ -49,7 +45,7 @@ class UserControllerTest {
         createdUser.setName("Test Name");
         createdUser.setBirthday(LocalDate.of(1990, 1, 1));
 
-        when(userStorage.addUser(any(User.class))).thenReturn(createdUser);
+        when(userService.addUser(any(User.class))).thenReturn(createdUser);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -74,7 +70,7 @@ class UserControllerTest {
         createdUser.setName("testlogin"); // имя должно стать логином
         createdUser.setBirthday(LocalDate.of(1990, 1, 1));
 
-        when(userStorage.addUser(any(User.class))).thenReturn(createdUser);
+        when(userService.addUser(any(User.class))).thenReturn(createdUser);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
 
@@ -29,9 +28,6 @@ class FilmControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private FilmStorage filmStorage;
-
-    @MockBean
     private FilmService filmService;
 
     @Test
@@ -49,7 +45,7 @@ class FilmControllerTest {
         createdFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
         createdFilm.setDuration(120);
 
-        when(filmStorage.addFilm(any(Film.class))).thenReturn(createdFilm);
+        when(filmService.addFilm(any(Film.class))).thenReturn(createdFilm);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)

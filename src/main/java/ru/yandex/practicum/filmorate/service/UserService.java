@@ -22,6 +22,37 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
+    public List<User> getAllUsers() {
+        return userStorage.getAllUsers();
+    }
+
+    public User getUserById(Long id) {
+        return userStorage.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
+    }
+
+    public User addUser(User user) {
+        // Обработка имени (если не задано, используем логин)
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        return userStorage.addUser(user);
+    }
+
+    public User updateUser(User user) {
+        // Проверяем существование пользователя
+        if (!userStorage.containsUser(user.getId())) {
+            throw new NotFoundException("Пользователь с id " + user.getId() + " не найден");
+        }
+
+        // Обработка имени (если не задано, используем логин)
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+
+        return userStorage.updateUser(user);
+    }
+
     public User addFriend(Long userId, Long friendId) {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
@@ -62,10 +93,5 @@ public class UserService {
         return commonFriendsIds.stream()
                 .map(this::getUserById)
                 .collect(Collectors.toList());
-    }
-
-    private User getUserById(Long id) {
-        return userStorage.getUserById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
     }
 }

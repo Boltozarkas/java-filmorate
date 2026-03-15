@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,6 +27,9 @@ class FilmControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockBean
+    private FilmService filmService;
+
     @Test
     void shouldCreateFilm() throws Exception {
         Film film = new Film();
@@ -31,11 +38,20 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
 
+        Film createdFilm = new Film();
+        createdFilm.setId(1L);
+        createdFilm.setName("Test Film");
+        createdFilm.setDescription("Test Description");
+        createdFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
+        createdFilm.setDuration(120);
+
+        when(filmService.addFilm(any(Film.class))).thenReturn(createdFilm);
+
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(film)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test Film"));
     }
 

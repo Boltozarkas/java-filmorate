@@ -4,11 +4,15 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Film {
     private long id;
     private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+
+    private Set<Long> likes = new HashSet<>(); // для хранения лайков
 
     @NotBlank(message = "Название не может быть пустым")
     private String name;

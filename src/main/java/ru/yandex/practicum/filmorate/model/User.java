@@ -26,6 +26,8 @@ public class User {
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
+    private boolean friendshipStatus;
+
     // Если имя не задано, используем логин
     public String getName() {
         if (name == null || name.isBlank()) {

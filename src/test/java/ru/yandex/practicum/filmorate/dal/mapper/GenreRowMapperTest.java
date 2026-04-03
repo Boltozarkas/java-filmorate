@@ -6,6 +6,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -39,18 +41,12 @@ class GenreRowMapperTest {
 
     @Test
     void shouldMapRowForAllGenres() throws SQLException {
-        Object[][] testData = {
-                {1, "Комедия"},
-                {2, "Драма"},
-                {3, "Мультфильм"},
-                {4, "Триллер"},
-                {5, "Документальный"},
-                {6, "Боевик"}
-        };
+        List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5, 6);
+        List<String> names = Arrays.asList("Комедия", "Драма", "Мультфильм", "Триллер", "Документальный", "Боевик");
 
-        for (Object[] data : testData) {
-            Integer id = (Integer) data[0];
-            String name = (String) data[1];
+        for (int i = 0; i < ids.size(); i++) {
+            Integer id = ids.get(i);
+            String name = names.get(i);
 
             when(resultSet.getInt("id")).thenReturn(id);
             when(resultSet.getString("name")).thenReturn(name);

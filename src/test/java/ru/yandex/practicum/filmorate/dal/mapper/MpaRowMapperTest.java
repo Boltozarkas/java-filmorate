@@ -6,6 +6,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -99,17 +101,12 @@ class MpaRowMapperTest {
 
     @Test
     void shouldMapRowWithAllRussianRatings() throws SQLException {
-        Object[][] testData = {
-                {1, "0+"},
-                {2, "6+"},
-                {3, "12+"},
-                {4, "16+"},
-                {5, "18+"}
-        };
+        List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
+        List<String> names = Arrays.asList("0+", "6+", "12+", "16+", "18+");
 
-        for (Object[] data : testData) {
-            Integer id = (Integer) data[0];
-            String name = (String) data[1];
+        for (int i = 0; i < ids.size(); i++) {
+            Integer id = ids.get(i);
+            String name = names.get(i);
 
             when(resultSet.getInt("id")).thenReturn(id);
             when(resultSet.getString("name")).thenReturn(name);

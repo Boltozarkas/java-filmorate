@@ -41,17 +41,12 @@ class MpaRowMapperTest {
 
     @Test
     void shouldMapRowForAllMpaRatings() throws SQLException {
-        Object[][] testData = {
-                {1, "G"},
-                {2, "PG"},
-                {3, "PG-13"},
-                {4, "R"},
-                {5, "NC-17"}
-        };
+        List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
+        List<String> names = Arrays.asList("G", "PG", "PG-13", "R", "NC-17");
 
-        for (Object[] data : testData) {
-            Integer id = (Integer) data[0];
-            String name = (String) data[1];
+        for (int i = 0; i < ids.size(); i++) {
+            Integer id = ids.get(i);
+            String name = names.get(i);
 
             when(resultSet.getInt("id")).thenReturn(id);
             when(resultSet.getString("name")).thenReturn(name);

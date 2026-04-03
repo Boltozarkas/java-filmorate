@@ -9,8 +9,8 @@ import java.util.Set;
 
 @Data
 public class User {
-    private long id;
-    private Set<Long> friends = new HashSet<>(); // для хранения друзей
+    private Long id;
+    private Set<Long> friends = new HashSet<>();
 
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Email должен содержать символ @ и быть корректным")
@@ -26,9 +26,6 @@ public class User {
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
-    private boolean friendshipStatus;
-
-    // Если имя не задано, используем логин
     public String getName() {
         if (name == null || name.isBlank()) {
             return login;

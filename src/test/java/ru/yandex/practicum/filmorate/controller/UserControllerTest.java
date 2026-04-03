@@ -39,7 +39,7 @@ class UserControllerTest {
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
         User createdUser = new User();
-        createdUser.setId(1L);
+        createdUser.setId(1L);  // Исправлено: Long вместо int
         createdUser.setEmail("test@test.com");
         createdUser.setLogin("testlogin");
         createdUser.setName("Test Name");
@@ -64,10 +64,10 @@ class UserControllerTest {
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
         User createdUser = new User();
-        createdUser.setId(1L);
+        createdUser.setId(1L);  // Исправлено: Long вместо int
         createdUser.setEmail("test@test.com");
         createdUser.setLogin("testlogin");
-        createdUser.setName("testlogin"); // имя должно стать логином
+        createdUser.setName("testlogin");
         createdUser.setBirthday(LocalDate.of(1990, 1, 1));
 
         when(userService.addUser(any(User.class))).thenReturn(createdUser);

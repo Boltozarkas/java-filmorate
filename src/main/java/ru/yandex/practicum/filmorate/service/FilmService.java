@@ -2,83 +2,67 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.repository.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmRepository filmRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
+    public FilmService(@Qualifier("filmRepositoryImpl") FilmRepository filmRepository,
+                       @Qualifier("userRepositoryImpl") UserRepository userRepository) {
+        this.filmRepository = filmRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        return filmRepository.findAll();
     }
 
     public Film getFilmById(Long id) {
-        return filmStorage.getFilmById(id)
+        return filmRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм с id " + id + " не найден"));
     }
 
     public Film addFilm(Film film) {
-        return filmStorage.addFilm(film);
+        return filmRepository.save(film);
     }
 
     public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(film);
+        return filmRepository.save(film);
     }
 
     public Film addLike(Long filmId, Long userId) {
-        // Проверяем существование пользователя
-        if (!userStorage.containsUser(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
 
-        Film film = getFilmById(filmId);
-        film.getLikes().add(userId);
+        filmRepository.addLike(filmId, userId);
         log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
-
-        return film;
+        return getFilmById(filmId);
     }
 
     public Film removeLike(Long filmId, Long userId) {
-        // Проверяем существование пользователя
-        if (!userStorage.containsUser(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
 
-        Film film = getFilmById(filmId);
-
-        if (!film.getLikes().contains(userId)) {
-            log.warn("Пользователь {} не ставил лайк фильму {}", userId, filmId);
-            return film;
-        }
-
-        film.getLikes().remove(userId);
+        filmRepository.removeLike(filmId, userId);
         log.info("Пользователь {} удалил лайк у фильма {}", userId, filmId);
-
-        return film;
+        return getFilmById(filmId);
     }
 
     public List<Film> getPopularFilms(Integer count) {
         int limit = count == null ? 10 : count;
-
-        return filmStorage.getAllFilms().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(limit)
-                .collect(Collectors.toList());
+        return filmRepository.findPopular(limit);
     }
 }

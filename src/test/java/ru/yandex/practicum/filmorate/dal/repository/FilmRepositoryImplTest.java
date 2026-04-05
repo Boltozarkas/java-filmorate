@@ -57,10 +57,6 @@ class FilmRepositoryImplTest {
         Mpa mpa = mpaRepository.findById(1).orElse(null);
         testFilm.setMpa(mpa);
 
-        Set<Genre> genres = new LinkedHashSet<>();
-        genreRepository.findById(1).ifPresent(genres::add);
-        testFilm.setGenres(genres);
-
         // Создаем тестового пользователя
         testUser = new User();
         testUser.setEmail("test@example.com");
@@ -82,7 +78,7 @@ class FilmRepositoryImplTest {
         assertThat(savedFilm.getDuration()).isEqualTo(120L);
         assertThat(savedFilm.getMpa()).isNotNull();
         assertThat(savedFilm.getMpa().getId()).isEqualTo(1);
-        assertThat(savedFilm.getGenres()).hasSize(1);
+        assertThat(savedFilm.getGenres()).isEmpty();
     }
 
     @Test
@@ -123,7 +119,7 @@ class FilmRepositoryImplTest {
         assertThat(foundFilm.get().getId()).isEqualTo(savedFilm.getId());
         assertThat(foundFilm.get().getName()).isEqualTo(savedFilm.getName());
         assertThat(foundFilm.get().getMpa()).isNotNull();
-        assertThat(foundFilm.get().getGenres()).isNotEmpty();
+        assertThat(foundFilm.get().getGenres()).isEmpty();
     }
 
     @Test
@@ -172,7 +168,6 @@ class FilmRepositoryImplTest {
     void shouldAddLike() {
         Film savedFilm = filmRepository.save(testFilm);
 
-        // Используем реального пользователя, который есть в БД
         filmRepository.addLike(savedFilm.getId(), testUser.getId());
 
         Set<Long> likes = filmRepository.getLikes(savedFilm.getId());
@@ -194,7 +189,6 @@ class FilmRepositoryImplTest {
     void shouldGetLikes() {
         Film savedFilm = filmRepository.save(testFilm);
 
-        // Создаем второго пользователя
         User secondUser = new User();
         secondUser.setEmail("second@example.com");
         secondUser.setLogin("secondlogin");
@@ -223,7 +217,6 @@ class FilmRepositoryImplTest {
         film2.setMpa(mpaRepository.findById(1).orElse(null));
         Film savedFilm2 = filmRepository.save(film2);
 
-        // Создаем дополнительных пользователей
         User user2 = new User();
         user2.setEmail("user2@example.com");
         user2.setLogin("user2");
@@ -238,7 +231,6 @@ class FilmRepositoryImplTest {
         user3.setBirthday(LocalDate.of(1993, 1, 1));
         user3 = userRepository.save(user3);
 
-        // Добавляем больше лайков второму фильму
         filmRepository.addLike(savedFilm2.getId(), testUser.getId());
         filmRepository.addLike(savedFilm2.getId(), user2.getId());
         filmRepository.addLike(savedFilm2.getId(), user3.getId());
@@ -251,7 +243,13 @@ class FilmRepositoryImplTest {
 
     @Test
     void shouldFindFilmsByGenre() {
+        // Сначала сохраняем фильм
         Film savedFilm = filmRepository.save(testFilm);
+
+        // Сохраняем жанры через GenreRepository, так как FilmRepository их не сохраняет
+        Set<Genre> genres = new LinkedHashSet<>();
+        genreRepository.findById(1).ifPresent(genres::add);
+        genreRepository.saveFilmGenres(savedFilm.getId(), genres);
 
         List<Film> filmsByGenre = filmRepository.findByGenre(1);
 
@@ -290,18 +288,14 @@ class FilmRepositoryImplTest {
     }
 
     @Test
-    void shouldUpdateGenres() {
-        Film savedFilm = filmRepository.save(testFilm);
+    void shouldValidateGenresExistWhenSaving() {
+        // Добавляем несуществующий жанр
+        Set<Genre> invalidGenres = new LinkedHashSet<>();
+        invalidGenres.add(new Genre(999, "Non Existent"));
+        testFilm.setGenres(invalidGenres);
 
-        Set<Genre> newGenres = new LinkedHashSet<>();
-        genreRepository.findById(2).ifPresent(newGenres::add);
-        genreRepository.findById(3).ifPresent(newGenres::add);
-        savedFilm.setGenres(newGenres);
-
-        Film updatedFilm = filmRepository.save(savedFilm);
-
-        assertThat(updatedFilm.getGenres()).hasSize(2);
-        assertThat(updatedFilm.getGenres()).extracting(Genre::getId)
-                .containsExactlyInAnyOrder(2, 3);
+        assertThatThrownBy(() -> filmRepository.save(testFilm))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Один или несколько жанров не найдены");
     }
 }

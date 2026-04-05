@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import ru.yandex.practicum.filmorate.dal.repository.FilmRepository;
-import ru.yandex.practicum.filmorate.dal.repository.UserRepository;
+import ru.yandex.practicum.filmorate.dal.repository.GenreRepository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -30,10 +29,7 @@ class FilmServiceIntegrationTest {
     private UserService userService;
 
     @Autowired
-    private FilmRepository filmRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private GenreRepository genreRepository;
 
     private Film testFilm;
     private User testUser;
@@ -48,7 +44,7 @@ class FilmServiceIntegrationTest {
         testFilm.setMpa(new Mpa(1, "G"));
 
         Set<Genre> genres = new LinkedHashSet<>();
-        genres.add(new Genre(1, "Комедия"));
+        genreRepository.findById(1).ifPresent(genres::add);
         testFilm.setGenres(genres);
 
         testUser = new User();
@@ -65,6 +61,7 @@ class FilmServiceIntegrationTest {
         assertThat(film).isNotNull();
         assertThat(film.getId()).isPositive();
         assertThat(film.getName()).isEqualTo("Test Film");
+        assertThat(film.getGenres()).isNotEmpty();
     }
 
     @Test
@@ -84,6 +81,7 @@ class FilmServiceIntegrationTest {
 
         assertThat(foundFilm).isNotNull();
         assertThat(foundFilm.getId()).isEqualTo(savedFilm.getId());
+        assertThat(foundFilm.getGenres()).isNotEmpty();
     }
 
     @Test

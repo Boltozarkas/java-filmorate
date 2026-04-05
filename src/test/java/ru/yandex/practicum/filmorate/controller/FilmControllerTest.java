@@ -36,14 +36,14 @@ class FilmControllerTest {
         film.setName("Test Film");
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
+        film.setDuration(120L);  // Исправлено: Long вместо int
 
         Film createdFilm = new Film();
-        createdFilm.setId(1L);
+        createdFilm.setId(1L);  // Исправлено: Long вместо int
         createdFilm.setName("Test Film");
         createdFilm.setDescription("Test Description");
         createdFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
-        createdFilm.setDuration(120);
+        createdFilm.setDuration(120L);  // Исправлено: Long вместо int
 
         when(filmService.addFilm(any(Film.class))).thenReturn(createdFilm);
 
@@ -61,7 +61,7 @@ class FilmControllerTest {
         film.setName("");
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
+        film.setDuration(120L);  // Исправлено: Long вместо int
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,7 +75,7 @@ class FilmControllerTest {
         film.setName("Test Film");
         film.setDescription("a".repeat(201));
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
+        film.setDuration(120L);  // Исправлено: Long вместо int
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,7 +89,7 @@ class FilmControllerTest {
         film.setName("Test Film");
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(-120);
+        film.setDuration(-120L);  // Исправлено: Long вместо int
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -103,7 +103,7 @@ class FilmControllerTest {
         film.setName("Test Film");
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(1800, 1, 1));
-        film.setDuration(120);
+        film.setDuration(120L);  // Исправлено: Long вместо int
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)

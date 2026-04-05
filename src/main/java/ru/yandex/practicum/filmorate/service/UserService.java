@@ -2,96 +2,79 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.repository.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserService {
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public UserService(@Qualifier("userRepositoryImpl") UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
+        return userRepository.findAll();
     }
 
     public User getUserById(Long id) {
-        return userStorage.getUserById(id)
+        return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
     }
 
     public User addUser(User user) {
-        // Обработка имени (если не задано, используем логин)
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        return userStorage.addUser(user);
+        return userRepository.save(user);
     }
 
     public User updateUser(User user) {
-        // Проверяем существование пользователя
-        if (!userStorage.containsUser(user.getId())) {
-            throw new NotFoundException("Пользователь с id " + user.getId() + " не найден");
-        }
-
-        // Обработка имени (если не задано, используем логин)
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
-        return userStorage.updateUser(user);
+        return userRepository.save(user);
     }
 
     public User addFriend(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        getUserById(userId);
+        getUserById(friendId);
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-
+        userRepository.addFriend(userId, friendId);
         log.info("Пользователь {} добавил в друзья пользователя {}", userId, friendId);
-        return user;
+        return getUserById(userId);
     }
 
     public User removeFriend(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        getUserById(userId);
+        getUserById(friendId);
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-
+        userRepository.removeFriend(userId, friendId);
         log.info("Пользователь {} удалил из друзей пользователя {}", userId, friendId);
-        return user;
+        return getUserById(userId);
     }
 
     public List<User> getUserFriends(Long userId) {
-        User user = getUserById(userId);
+        getUserById(userId);
 
-        return user.getFriends().stream()
+        List<Long> friendsIds = userRepository.findFriendIds(userId);
+        return friendsIds.stream()
                 .map(this::getUserById)
                 .collect(Collectors.toList());
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
-        User user = getUserById(userId);
-        User other = getUserById(otherId);
+        getUserById(userId);
+        getUserById(otherId);
 
-        Set<Long> commonFriendsIds = new HashSet<>(user.getFriends());
-        commonFriendsIds.retainAll(other.getFriends());
-
-        return commonFriendsIds.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return userRepository.findCommonFriends(userId, otherId);
     }
 }
